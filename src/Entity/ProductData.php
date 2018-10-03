@@ -42,7 +42,7 @@ class ProductData
     private $dtmDiscontinued;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="datetime")
      */
     private $stmTimestamp;
 
@@ -119,12 +119,12 @@ class ProductData
         return $this;
     }
 
-    public function getStmTimestamp(): ?int
+    public function getStmTimestamp(): ?\DateTimeInterface
     {
         return $this->stmTimestamp;
     }
 
-    public function setStmTimestamp(int $stmTimestamp): self
+    public function setStmTimestamp(?\DateTimeInterface $stmTimestamp): self
     {
         $this->stmTimestamp = $stmTimestamp;
 

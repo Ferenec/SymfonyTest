@@ -88,7 +88,7 @@ class ParseCsv extends DoctrineCommand {
         $product->setStrProductName($data[$this->columns[$this->requiredColumns['name']]]);
         $product->setStrProductDesc($data[$this->columns[$this->requiredColumns['desc']]]);
         $product->setDtmAdded( new \DateTime("now"));
-        $product->setStmTimestamp(time());
+        $product->setStmTimestamp(new \DateTime("now"));
         if ($data[$this->columns[$this->requiredColumns['disc']]] === 'yes') {
             $product->setDtmDiscontinued(new \DateTime("now"));
         }
