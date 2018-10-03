@@ -18,6 +18,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ParseCsv extends DoctrineCommand {
 
+    protected $requiredColumns = [
+        'code'  =>'Product Code',
+        'name'  => 'Product Name',
+        'desc'  => 'Product Description',
+        'stock' => 'Stock',
+        'cost'  => 'Cost in GBP',
+        'disc'  => 'Discontinued',
+    ];
+
+    protected $columns;
+
     protected function configure()
     {
         $this
@@ -34,8 +45,17 @@ class ParseCsv extends DoctrineCommand {
 
         if (($file = fopen($path, "r")) !== false) { // checking for existence and opening a file
             $count = 0;
+            $isHeader = true;
             while (($data = fgetcsv($file)) !== false) {   // walk through file with data processing
-                $count += $this->checkAndSaveProduct($data) ? 1 : 0; // processing the row and increasing the number of rows processed
+                if ($isHeader){
+                    if (!self::checkHeader($data)){
+                        $output->writeln("The required columns were not found in the file! Check the file.");
+                        break;
+                    }else
+                        $isHeader = false;
+                }else {
+                    $count += $this->checkAndSaveProduct($data) ? 1 : 0; // processing the row and increasing the number of rows processed
+                }
             }
             $output->writeln($count.' records have been inserted!');
         }else{
@@ -45,11 +65,11 @@ class ParseCsv extends DoctrineCommand {
     }
 
     protected function checkAndSaveProduct($data){
-        if (empty($data[4]) || empty($data[3])){ // checking the conditions for insertion into db
+        if (empty($data[$this->columns[$this->requiredColumns['cost']]]) || empty($data[$this->columns[$this->requiredColumns['stock']]])){ // checking the conditions for insertion into db
             return false;
-        }elseif ($data[4] < 5 && $data[3] < 10){
+        }elseif ($data[$this->columns[$this->requiredColumns['cost']]] < 5 && $data[$this->columns[$this->requiredColumns['stock']]] < 10){
             return false;
-        }elseif($data[4] > 1000){
+        }elseif($data[$this->columns[$this->requiredColumns['cost']]] > 1000){
             return false;
         }
 
@@ -64,12 +84,12 @@ class ParseCsv extends DoctrineCommand {
         }
 
         $product = new ProductData();
-        $product->setStrProductCode($data[0]);
-        $product->setStrProductName($data[1]);
-        $product->setStrProductDesc($data[2]);
+        $product->setStrProductCode($data[$this->columns[$this->requiredColumns['code']]]);
+        $product->setStrProductName($data[$this->columns[$this->requiredColumns['name']]]);
+        $product->setStrProductDesc($data[$this->columns[$this->requiredColumns['desc']]]);
         $product->setDtmAdded( new \DateTime("now"));
         $product->setStmTimestamp(time());
-        if ($data[5] === 'yes') {
+        if ($data[$this->columns[$this->requiredColumns['disc']]] === 'yes') {
             $product->setDtmDiscontinued(new \DateTime("now"));
         }
 
@@ -81,6 +101,18 @@ class ParseCsv extends DoctrineCommand {
             echo 'Error! ',  $e->getMessage(), "\n";
             return false;
         }
+    }
+
+    protected function checkHeader($data){ // checking the availability of necessary columns and creating an array of matches
+        foreach ($this->requiredColumns as $code => $requiredColumn){
+            $key = array_search($requiredColumn, $data);
+            if ($key !== false){
+                $this->columns[$requiredColumn] = $key;
+            }else{
+                return false;
+            }
+        }
+        return true;
     }
 
 }
