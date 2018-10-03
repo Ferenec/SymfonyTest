@@ -46,7 +46,7 @@ class ParseCsv extends DoctrineCommand {
         if (($file = fopen($path, "r")) !== false) { // checking for existence and opening a file
             $count = 0;
             $isHeader = true;
-            while (($data = fgetcsv($file)) !== false) {   // walk through file with data processing
+            while ($data = fgetcsv($file)) {   // walk through file with data processing
                 if ($isHeader){
                     if (!self::checkHeader($data)){
                         $output->writeln("The required columns were not found in the file! Check the file.");
