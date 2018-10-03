@@ -32,10 +32,10 @@ class ParseCsv extends DoctrineCommand {
         $path = $input->getArgument('path');
 
 
-        if (($file = fopen($path, "r")) !== false) {
+        if (($file = fopen($path, "r")) !== false) { // checking for existence and opening a file
             $count = 0;
-            while (($data = fgetcsv($file)) !== false) {
-                $count += $this->checkAndSaveProduct($data) ? 1 : 0;
+            while (($data = fgetcsv($file)) !== false) {   // walk through file with data processing
+                $count += $this->checkAndSaveProduct($data) ? 1 : 0; // processing the row and increasing the number of rows processed
             }
             $output->writeln($count.' records have been inserted!');
         }else{
@@ -45,7 +45,7 @@ class ParseCsv extends DoctrineCommand {
     }
 
     protected function checkAndSaveProduct($data){
-        if (empty($data[4]) || empty($data[3])){
+        if (empty($data[4]) || empty($data[3])){ // checking the conditions for insertion into db
             return false;
         }elseif ($data[4] < 5 && $data[3] < 10){
             return false;
@@ -54,9 +54,9 @@ class ParseCsv extends DoctrineCommand {
         }
 
         /* @var $em EntityManager*/
-        $em = $this->getContainer()->get('doctrine')->getManager('default');
+        $em = $this->getContainer()->get('doctrine')->getManager('default'); // Load default entity manager
 
-        if (!$em->isOpen()) {
+        if (!$em->isOpen()) { // check is manager closed and reload if need
             $em = $em->create(
                 $em->getConnection(),
                 $em->getConfiguration()
@@ -73,7 +73,7 @@ class ParseCsv extends DoctrineCommand {
             $product->setDtmDiscontinued(new \DateTime("now"));
         }
 
-        try {
+        try { // trying saving into db
             $em->persist($product);
             $em->flush();
             return true;
