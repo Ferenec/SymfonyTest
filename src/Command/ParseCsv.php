@@ -42,29 +42,29 @@ class ParseCsv extends DoctrineCommand {
     protected function execute(InputInterface $input, OutputInterface $output){
         $path = $input->getArgument('path');
 
-
-        if (($file = fopen($path, "r")) !== false) { // checking for existence and opening a file
-            $count = 0;
-            $isHeader = true;
-            while ($data = fgetcsv($file)) {   // walk through file with data processing
-                if ($isHeader){
-                    if (!self::checkHeader($data)){
-                        $output->writeln("The required columns were not found in the file! Check the file.");
-                        break;
-                    }else
-                        $isHeader = false;
-                }else {
-                    $count += $this->checkAndSaveProduct($data) ? 1 : 0; // processing the row and increasing the number of rows processed
-                }
-            }
-            $output->writeln($count.' records have been inserted!');
-        }else{
-            $output->writeln('No such file "'.$path.'"');
+        try {
+            $file = fopen($path, "r");  // checking for existence and opening a file
+        }catch (\Exception $e) {
+            $output->writeln($e->getMessage());
+            return;
         }
-
+        $count = 0;
+        $isHeader = true;
+        while ($data = fgetcsv($file)) {   // walk through file with data processing
+            if ($isHeader){
+                if (!self::checkHeader($data)){
+                    $output->writeln("The required columns were not found in the file! Check the file.");
+                    return;
+                }else
+                    $isHeader = false;
+            }else {
+                $count += $this->checkAndSaveProduct($data, $output) ? 1 : 0; // processing the row and increasing the number of rows processed
+            }
+        }
+        $output->writeln($count.' records have been inserted!');
     }
 
-    protected function checkAndSaveProduct($data){
+    protected function checkAndSaveProduct($data,OutputInterface $output){
         if (empty($data[$this->columns[$this->requiredColumns['cost']]]) || empty($data[$this->columns[$this->requiredColumns['stock']]])){ // checking the conditions for insertion into db
             return false;
         }elseif ($data[$this->columns[$this->requiredColumns['cost']]] < 5 && $data[$this->columns[$this->requiredColumns['stock']]] < 10){
@@ -98,7 +98,7 @@ class ParseCsv extends DoctrineCommand {
             $em->flush();
             return true;
         } catch (\Exception $e) {
-            echo 'Error! ',  $e->getMessage(), "\n";
+            $output->writeln('Error! '.  $e->getMessage());
             return false;
         }
     }
