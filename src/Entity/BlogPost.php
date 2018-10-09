@@ -5,9 +5,9 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\BlogRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\BlogPostRepository")
  */
-class Blog
+class BlogPost
 {
     /**
      * @ORM\Id()
@@ -25,6 +25,16 @@ class Blog
      * @ORM\Column(type="string", length=255)
      */
     private $body;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $draft;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Category", inversedBy="blogPosts")
+     */
+    private $category;
 
     public function getId(): ?int
     {
@@ -51,6 +61,29 @@ class Blog
     public function setBody(string $body): self
     {
         $this->body = $body;
+
+        return $this;
+    }
+
+    public function getDraft(): ?bool
+    {
+        return $this->draft;
+    }
+
+    public function setDraft(bool $draft): self
+    {
+        $this->draft = $draft ?? true;
+
+        return $this;
+    }
+
+    public function getCategory(){
+        return $this->category;
+    }
+
+    public function setCategory(Category $category): self
+    {
+        $this->category = $category;
 
         return $this;
     }
