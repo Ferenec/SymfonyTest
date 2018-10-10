@@ -1,16 +1,12 @@
 <?php
 namespace App\Controller;
 
-use App\Entity\Article;
-use App\Entity\Blog;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\HttpFoundation\Response;
+use App\Entity\ProductData;
 
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
 
-class DefaultController extends AbstractController
+class DefaultController extends Controller
 {
 
     /**
@@ -18,7 +14,13 @@ class DefaultController extends AbstractController
      */
     public function index()
     {
-        return $this->render('base.html.twig');
+        $products = $this->getDoctrine()
+            ->getRepository(ProductData::class)
+            ->findAll();
+
+        return $this->render('main.html.php', [
+            'products' => $products
+        ]);
     }
 
 }
