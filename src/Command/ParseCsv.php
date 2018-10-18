@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: a.ferenets
- * Date: 2.10.18
- * Time: 16.16
- */
 
 namespace App\Command;
-
 
 use App\Entity\ProductData;
 use Doctrine\Bundle\DoctrineBundle\Command\DoctrineCommand;
@@ -39,44 +32,61 @@ class ParseCsv extends DoctrineCommand {
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output){
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     * @throws \Doctrine\ORM\ORMException
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $path = $input->getArgument('path');
 
         try {
             $file = fopen($path, "r");  // checking for existence and opening a file
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             $output->writeln($e->getMessage());
             return;
         }
-        $count = 0;
+        $inserted = 0;
         $isHeader = true;
         while ($data = fgetcsv($file)) {   // walk through file with data processing
             if ($isHeader){
-                if (!self::checkHeader($data)){
+                if (!self::checkHeader($data))
+                {
                     $output->writeln("The required columns were not found in the file! Check the file.");
                     return;
-                }else
+                } else
                     $isHeader = false;
-            }else {
-                $count += $this->checkAndSaveProduct($data, $output) ? 1 : 0; // processing the row and increasing the number of rows processed
+            } else {
+                $inserted += $this->checkAndSaveProduct($data, $output) ? 1 : 0;
             }
         }
-        $output->writeln($count.' records have been inserted!');
+        $output->writeln($inserted.' records have been inserted!');
     }
 
-    protected function checkAndSaveProduct($data,OutputInterface $output){
-        if (empty($data[$this->columns[$this->requiredColumns['cost']]]) || empty($data[$this->columns[$this->requiredColumns['stock']]])){ // checking the conditions for insertion into db
+    /**
+     * @param $data
+     * @param OutputInterface $output
+     * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     */
+    protected function checkAndSaveProduct($data,OutputInterface $output)
+    {
+        if (empty($data[$this->columns[$this->requiredColumns['cost']]])
+            || empty($data[$this->columns[$this->requiredColumns['stock']]])){
             return false;
-        }elseif ($data[$this->columns[$this->requiredColumns['cost']]] < 5 && $data[$this->columns[$this->requiredColumns['stock']]] < 10){
+        } elseif ($data[$this->columns[$this->requiredColumns['cost']]] < 5
+            && $data[$this->columns[$this->requiredColumns['stock']]] < 10){
             return false;
-        }elseif($data[$this->columns[$this->requiredColumns['cost']]] > 1000){
+        } elseif ($data[$this->columns[$this->requiredColumns['cost']]] > 1000){
             return false;
         }
 
         /* @var $em EntityManager*/
-        $em = $this->getContainer()->get('doctrine')->getManager('default'); // Load default entity manager
+        $em = $this->getContainer()->get('doctrine')->getManager('default');
 
-        if (!$em->isOpen()) { // check is manager closed and reload if need
+        if (!$em->isOpen()) {
             $em = $em->create(
                 $em->getConnection(),
                 $em->getConfiguration()
@@ -103,12 +113,17 @@ class ParseCsv extends DoctrineCommand {
         }
     }
 
-    protected function checkHeader($data){ // checking the availability of necessary columns and creating an array of matches
+    /**
+     * @param $data
+     * @return bool
+     */
+    protected function checkHeader($data)
+    {
         foreach ($this->requiredColumns as $code => $requiredColumn){
             $key = array_search($requiredColumn, $data);
             if ($key !== false){
                 $this->columns[$requiredColumn] = $key;
-            }else{
+            } else {
                 return false;
             }
         }
