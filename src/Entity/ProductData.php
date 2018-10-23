@@ -46,88 +46,30 @@ class ProductData
      */
     private $stmTimestamp;
 
-
-    public function getIntProductDataId(): ?int
+    public function __construct($data = [])
     {
-        return $this->intProductDataId;
+        $this->strProductName = $data['name'];
+        $this->strProductCode = $data['code'];
+        $this->strProductDesc = $data['desc'];
+        if ($data['disc']){
+            $this->setDtmDiscontinued();
+        }
+        $this->setDtmAdded();
+        $this->setStmTimestamp();
     }
 
-    public function setIntProductDataId(int $intProductDataId): self
+    public function setDtmAdded()
     {
-        $this->intProductDataId = $intProductDataId;
-
-        return $this;
+        $this->dtmAdded = new \DateTime();
     }
 
-    public function getStrProductName(): ?string
+    public function setDtmDiscontinued()
     {
-        return $this->strProductName;
+        $this->dtmDiscontinued = new \DateTime();
     }
 
-    public function setStrProductName(string $strProductName): self
+    public function setStmTimestamp()
     {
-        $this->strProductName = $strProductName;
-
-        return $this;
-    }
-
-    public function getStrProductDesc(): ?string
-    {
-        return $this->strProductDesc;
-    }
-
-    public function setStrProductDesc(string $strProductDesc): self
-    {
-        $this->strProductDesc = $strProductDesc;
-
-        return $this;
-    }
-
-    public function getStrProductCode(): ?string
-    {
-        return $this->strProductCode;
-    }
-
-    public function setStrProductCode(string $strProductCode): self
-    {
-        $this->strProductCode = $strProductCode;
-
-        return $this;
-    }
-
-    public function getDtmAdded(): ?\DateTimeInterface
-    {
-        return $this->dtmAdded;
-    }
-
-    public function setDtmAdded(?\DateTimeInterface $dtmAdded): self
-    {
-        $this->dtmAdded = $dtmAdded;
-
-        return $this;
-    }
-
-    public function getDtmDiscontinued(): ?\DateTimeInterface
-    {
-        return $this->dtmDiscontinued;
-    }
-
-    public function setDtmDiscontinued(?\DateTimeInterface $dtmDiscontinued): self
-    {
-        $this->dtmDiscontinued = $dtmDiscontinued;
-
-        return $this;
-    }
-
-    public function getStmTimestamp(): ?\DateTimeInterface
-    {
-        return $this->stmTimestamp;
-    }
-
-    public function setStmTimestamp(?\DateTimeInterface $stmTimestamp): self
-    {
-        $this->stmTimestamp = $stmTimestamp;
-
-        return $this;
+        $this->stmTimestamp = new \DateTime();
     }
 }
